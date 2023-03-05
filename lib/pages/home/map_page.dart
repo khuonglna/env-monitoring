@@ -192,7 +192,9 @@ class _MapPageState extends State<MapPage> {
                 children: [
                   TileLayer(
                     urlTemplate:
-                        'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    // urlTemplate:
+                    //     'http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                     retinaMode: true,
                     subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
                     fallbackUrl:
