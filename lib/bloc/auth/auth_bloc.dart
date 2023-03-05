@@ -3,8 +3,9 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 
 import '../../constants/api.dart';
-import '../../models/login/auth_info.dart';
-import '../../models/login/login_req.dart';
+import '../../models/auth/auth_info.dart';
+import '../../models/auth/login_req.dart';
+import '../../models/auth/register_req.dart';
 import '../../models/sensor/sensor_model.dart';
 import '../../models/station/record.dart';
 import '../../models/station/station_model.dart';
@@ -147,13 +148,56 @@ class AuthBloc extends BaseCubit {
             isShowLoading: false,
           ),
         );
+      } else {
+        errorMessage = res.message ?? 'Unknown Error';
       }
 
       emit(
         LoadedState(
           authModel,
           isShowLoading: false,
-          errorMessage: res.message,
+          errorMessage: errorMessage,
+        ),
+      );
+      log('$runtimeType, $res');
+    } catch (e) {
+      log('\x1B[31m$e\x1B[0m');
+      emit(
+        LoadedState(
+          authModel,
+          isShowLoading: false,
+          errorMessage: 'System Error',
+        ),
+      );
+    }
+  }
+
+  Future<void> register(RegisterReq registerReq) async {
+    LoginReq authModel = latestLoadedState?.model ?? LoginReq();
+    String errorMessage = '';
+    emit(
+      LoadedState(
+        authModel,
+        isShowLoading: true,
+      ),
+    );
+    try {
+      final res = await RequestService.instance.get(
+        API.register,
+        query: registerReq.toJson(),
+        needAuth: false,
+      );
+
+      if ((res.code ?? 600) < 400) {
+        errorMessage = '';
+      } else {
+        errorMessage = res.message ?? 'Unknown Error';
+      }
+      emit(
+        LoadedState(
+          authModel,
+          isShowLoading: false,
+          errorMessage: errorMessage,
         ),
       );
       log('$runtimeType, $res');

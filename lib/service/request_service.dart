@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../constants/api.dart';
 import '../models/base/base_response_model.dart';
-import '../models/login/auth_info.dart';
+import '../models/auth/auth_info.dart';
 
 class RequestService {
   RequestService._instance();

@@ -8,7 +8,7 @@ import '../bloc/base_bloc.dart';
 import '../constants/constant.dart';
 import '../constants/image.dart';
 import '../dependencies.dart';
-import '../models/login/login_req.dart';
+import '../models/auth/login_req.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({
@@ -31,14 +31,16 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     bloc = AppDependencies.injector.get<AuthBloc>();
-    _scrollController.addListener(() {
-      if (_scrollController.position.userScrollDirection ==
-          ScrollDirection.forward) {
-        FocusScope.of(context).requestFocus(
-          FocusNode(),
-        );
-      }
-    });
+    _scrollController.addListener(
+      () {
+        if (_scrollController.position.userScrollDirection ==
+            ScrollDirection.forward) {
+          FocusScope.of(context).requestFocus(
+            FocusNode(),
+          );
+        }
+      },
+    );
     super.initState();
   }
 

@@ -58,12 +58,13 @@ class StationDetail extends StatelessWidget {
                 16,
               ),
               side: BorderSide(
-                  color: AppUtils.instance.getStationQualityColor(
-                    stationSensorQuality:
-                        model.stationSensorQuality[station.stationId] ?? 0,
-                  ),
-                  strokeAlign: StrokeAlign.center,
-                  width: 2),
+                color: AppUtils.instance.getStationQualityColor(
+                  stationSensorQuality:
+                      model.stationSensorQuality[station.stationId] ?? 0,
+                ),
+                strokeAlign: StrokeAlign.center,
+                width: 2,
+              ),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(

@@ -242,13 +242,3 @@ class _MapPageState extends State<MapPage> {
     );
   }
 }
-
-class Circle {
-  final double radius;
-  final String color;
-
-  const Circle({
-    this.radius = 1.0,
-    this.color = 'red',
-  });
-}

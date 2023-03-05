@@ -78,6 +78,7 @@ class MapBloc extends BaseCubit {
 
   void dispose() {
     _refreshDataTimer?.cancel();
+    _rotateSensorTimer?.cancel();
   }
 
   Future<void> fetchData() async {
