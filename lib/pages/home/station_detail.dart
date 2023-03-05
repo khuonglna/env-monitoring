@@ -62,7 +62,7 @@ class StationDetail extends StatelessWidget {
                   stationSensorQuality:
                       model.stationSensorQuality[station.stationId] ?? 0,
                 ),
-                strokeAlign: StrokeAlign.center,
+//                strokeAlign: StrokeAlign.center,
                 width: 2,
               ),
             ),
