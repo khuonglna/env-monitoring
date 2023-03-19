@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:dio/dio.dart';
 
 import '../../constants/api.dart';
@@ -19,6 +18,8 @@ class AuthBloc extends BaseCubit {
   AuthBloc() : super(InitialState());
   final dio = Dio();
 
+  Future<void> init() async {}
+
   Future<void> login({required LoginReq loginReq}) async {
     LoginReq authModel = latestLoadedState?.model ?? LoginReq();
     MapViewModel model = MapViewModel.instance;
@@ -37,7 +38,7 @@ class AuthBloc extends BaseCubit {
           'password': loginReq.password,
           // 'userName': 'nhan',
           // 'password': 'nhan',
-          // 'deviceId': '',
+          'deviceId': '',
         },
         needAuth: false,
       );
@@ -181,6 +182,12 @@ class AuthBloc extends BaseCubit {
         isShowLoading: true,
       ),
     );
+    if (registerReq.phone == null || (registerReq.phone?.isEmpty ?? false)) {
+      log('$runtimeType, Hello sai sđt ròi, generate place holder');
+      final holderPhone = AppUtils.instance.getRandomInt();
+      log('$runtimeType, place holder: $holderPhone');
+      registerReq.phone = holderPhone.toString();
+    }
     try {
       final res = await RequestService.instance.get(
         API.register,

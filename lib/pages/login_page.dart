@@ -20,7 +20,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool _rememberMe = false;
   bool _isObscured = true;
   final _loginReq = LoginReq();
   late final AuthBloc bloc;
@@ -154,10 +153,10 @@ class _LoginPageState extends State<LoginPage> {
                   // mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Checkbox(
-                      value: _rememberMe,
+                      value: _loginReq.isSaveLoginInfo,
                       onChanged: (value) {
                         setState(
-                          () => _rememberMe = value ?? false,
+                          () => _loginReq.isSaveLoginInfo = value ?? false,
                         );
                       },
                     ),

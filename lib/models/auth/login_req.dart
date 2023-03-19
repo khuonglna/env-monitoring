@@ -2,6 +2,7 @@ class LoginReq {
   String? userName;
   String? password;
   String? deviceId;
+  bool isSaveLoginInfo = false;
 
   LoginReq({
     this.userName,

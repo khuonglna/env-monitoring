@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../models/sensor/sensor_model.dart';
@@ -59,5 +61,16 @@ class AppUtils {
     } else {
       return 'Xấu';
     }
+  }
+
+  int getRandomInt() {
+    int intValue = 0;
+    while (intValue == 0 || intValue < 1000000000) {
+      final firstMax = math.Random().nextInt(4294967296);
+      final secondMax = math.Random().nextInt(4294967296);
+      intValue = math.pow(firstMax * secondMax, 1000).abs().toInt();
+    }
+
+    return intValue.toInt();
   }
 }
