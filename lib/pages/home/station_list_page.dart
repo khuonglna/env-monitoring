@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../models/view/map_view_model.dart';
 import '../../styles/color.dart';
 import '../../utils/app_utils.dart';
-import 'station_detail.dart';
+import 'station_detail_page.dart';
 
 class StationListPage extends StatefulWidget {
   const StationListPage({super.key});
@@ -29,7 +29,7 @@ class _StationListPageState extends State<StationListPage> {
               child: Text(
                 'Cập nhật lần cuối lúc: ${DateFormat('HH:mm:ss dd-MM-yyyy').format(
                   DateTime.fromMillisecondsSinceEpoch(
-                    (model.stationRecordMap[1]!.first.secondTillEpoch ?? 0) *
+                    (model.stationRecordMap[1]?.first.secondSinceEpoch ?? 0) *
                         1000,
                   ).subtract(
                     const Duration(
@@ -65,13 +65,16 @@ class _StationListPageState extends State<StationListPage> {
                             width: 70,
                             height: 70,
                             color: AppUtils.instance.getStationQualityColor(
-                              stationSensorQuality: model.stationSensorQuality[
-                                      station.stationId] ??
+                              stationSensorQuality: model
+                                      .stationRecordMap[station.stationId]
+                                      ?.first
+                                      .stationSQI ??
                                   0,
                             ),
                             child: Icon(
                               AppUtils.instance.getQualityIcon(
-                                model.stationSensorQuality[station.stationId] ??
+                                model.stationRecordMap[station.stationId]?.first
+                                        .stationSQI ??
                                     0,
                               ),
                               size: 50,

@@ -1,7 +1,10 @@
+import '../sensor/sensor_model.dart';
+
 class Record {
   int? sensorId;
   String? sensorName;
   double? value;
+  double? recordSQI;
 
   Record({
     this.sensorId,
@@ -21,5 +24,15 @@ class Record {
     data['sensor_name'] = sensorName;
     data['value'] = value;
     return data;
+  }
+
+  double calculateRecordSQI(Sensor sensor) {
+    final average = (sensor.upperBound! + sensor.lowerBound!) / 2;
+
+    if (value == null) {
+      return 0;
+    }
+
+    return (value! - average).abs() * sensor.differBound!;
   }
 }

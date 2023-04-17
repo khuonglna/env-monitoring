@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../constants/api.dart';
 import '../../constants/app_constant.dart';
+import '../../main.dart';
 import '../../models/sensor/sensor_model.dart';
-import '../../models/station/record.dart';
+import '../../models/station/record_model.dart';
 import '../../models/station/station_model.dart';
 import '../../models/station/station_record_model.dart';
 import '../../models/view/map_view_model.dart';
 import '../../service/request_service.dart';
-import '../../utils/app_utils.dart';
 import '../base_bloc.dart';
 
 class MapBloc extends BaseCubit {
@@ -53,9 +55,51 @@ class MapBloc extends BaseCubit {
       const Duration(
         seconds: 30,
       ),
-      (timer) {
+      (timer) async {
         log('$runtimeType, data refreshed');
-        fetchData();
+        await fetchData();
+        for (var station in model.stationList) {
+          if ((model.stationRecordMap[station.stationId]?.first.stationSQI ??
+                  0) >
+              100) {
+            if (Platform.isAndroid) {
+              const AndroidNotificationDetails androidNotificationDetails =
+                  AndroidNotificationDetails(
+                '1',
+                'your channel name',
+                channelDescription: 'your channel description',
+                importance: Importance.max,
+                priority: Priority.high,
+                ticker: 'ticker',
+              );
+              const NotificationDetails notificationDetails =
+                  NotificationDetails(android: androidNotificationDetails);
+              await flutterLocalNotificationsPlugin?.show(
+                1,
+                'Cảnh báo',
+                'Có điểm bất thường ở trạm ${station.name} ',
+                notificationDetails,
+                payload: 'item x',
+              );
+            } else if (Platform.isIOS) {
+              const DarwinNotificationDetails iosNotificationDetails =
+                  DarwinNotificationDetails(
+                presentAlert: true,
+              );
+              const NotificationDetails notificationDetails =
+                  NotificationDetails(
+                iOS: iosNotificationDetails,
+              );
+              await flutterLocalNotificationsPlugin?.show(
+                0,
+                'Cảnh báo',
+                'Có điểm bất thường ở trạm ${station.name} ',
+                notificationDetails,
+                payload: 'item x',
+              );
+            }
+          }
+        }
       },
     );
 
@@ -122,20 +166,38 @@ class MapBloc extends BaseCubit {
         model.stationList.clear();
         for (final resStation in resStationList.data as List<dynamic>) {
           final station = Station.fromJson(resStation);
+          if (station.sensors != null) {
+            for (int i = 0; i < station.sensors!.length; i++) {
+              Sensor sSensor = station.sensors![i];
+              final sensorIndex = model.sensorList.indexWhere(
+                (s) => s.sensorId == sSensor.sensorId,
+              );
+              if (sensorIndex > -1) {
+                station.sensors![i] = model.sensorList.singleWhere(
+                  (s) => s.sensorId == sSensor.sensorId,
+                );
+              }
+            }
+          }
 
           // Get station data
           final resListStationData = await RequestService.instance.get(
             API.stationData,
             query: {
               'station_id': station.stationId,
+              // 'data_count' : 1,
+              // 'start_date' : '2023-04-04',
+              // 'end_date' : '2023-04-05',
             },
           );
 
           if ((resListStationData.code ?? 600) < 400) {
             model.stationRecordMap.clear();
+
             for (final resStationData
                 in resListStationData.data as List<dynamic>) {
               final stationRecord = StationRecord.fromJson(resStationData);
+              station.stationRecords?.add(stationRecord);
               if (!model.stationRecordMap.containsKey(station.stationId)) {
                 model.stationRecordMap.addEntries(
                   {
@@ -152,7 +214,7 @@ class MapBloc extends BaseCubit {
           if (model.stationRecordMap.isNotEmpty) {
             if (model.stationRecordMap[station.stationId] != null) {
               model.stationRecordMap[station.stationId]!.sort(
-                (a, b) => b.secondTillEpoch!.compareTo(a.secondTillEpoch!),
+                (a, b) => b.secondSinceEpoch!.compareTo(a.secondSinceEpoch!),
               );
             }
           }
@@ -161,64 +223,22 @@ class MapBloc extends BaseCubit {
             {station.stationId ?? 0: 0},
           );
 
-          station.sensors?.forEach(
-            (stationSensor) {
-              final sensorData = model.sensorList.singleWhere(
-                (s) => s.sensorId == stationSensor.sensorId,
-              );
-
-              model.stationSensorQuality[station.stationId ?? 0] =
-                  model.stationSensorQuality[station.stationId ?? 0]! +
-                      AppUtils.instance.calculateAQI(
-                        sensorData,
-                        model
-                            .stationRecordMap[station.stationId]?.first.records!
-                            .singleWhere(
-                              (r) => r.sensorId == stationSensor.sensorId,
-                              orElse: () => Record(),
-                            )
-                            .value,
-                      );
+          model.stationRecordMap[station.stationId]?.forEach(
+            (sR) {
+              sR.calculateStationSQI(model.sensorList);
             },
           );
-          if ((station.stationId ?? 0) < 100) {
+
+          if (station.name?.contains('SC') ?? false) {
             model.enableStationList.add(station);
           }
 
-          // if (model.enableStationList
-          //         .where((e) => (e.stationId ?? double.maxFinite) < 4)
-          //         .length ==
-          //     4) {
-          //   model.focusLatLng = (model.enableStationList.first).latLng ??
-          //       AppConstant.defaultLatLng;
-          // }
           model.stationList.add(station);
         }
         model.isInit = true;
       } else {
         errorMessage = resStationList.message ?? '';
       }
-
-      // BaseResponse res = BaseResponse();
-      // if (rawResStationList.statusCode! < 400) {
-      //   res = BaseResponse.fromJson(
-      //     rawResStationList.data,
-      //   );
-      //   final data = res.data;
-      //   if ((res.code ?? 600) < 400) {
-      //     for (final station in data as List<dynamic>) {
-      //       model.add(Station.fromJson(station));
-      //       log('$runtimeType, ${Station.fromJson(station).toJson()}');
-      //     }
-      //     log('$runtimeType, model length: ${model.length}');
-      //     return emit(
-      //       LoadedState(
-      //         model,
-      //         isShowLoading: false,
-      //       ),
-      //     );
-      //   }
-      // }
 
       emit(
         LoadedState(

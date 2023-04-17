@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../constants/constant.dart';
+import '../../main.dart';
 import '../../models/auth/auth_info.dart';
 import '../../models/view/map_view_model.dart';
 
@@ -38,6 +42,52 @@ class _SettingPageState extends State<SettingPage> {
                 context.go(
                   AppPath.login,
                 );
+              },
+            ),
+
+            ElevatedButton(
+              style: ButtonStyle(
+                shape: MaterialStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+              child: const Text(
+                'NOTIFY',
+              ),
+              onPressed: () async {
+                if (Platform.isAndroid) {
+                  const AndroidNotificationDetails androidNotificationDetails =
+                      AndroidNotificationDetails(
+                    '1',
+                    'your channel name',
+                    channelDescription: 'your channel description',
+                    importance: Importance.max,
+                    priority: Priority.high,
+                    ticker: 'ticker',
+                  );
+                  const NotificationDetails notificationDetails =
+                      NotificationDetails(android: androidNotificationDetails);
+                  await flutterLocalNotificationsPlugin?.show(
+                    1,
+                    'This is the title',
+                    'This is the body',
+                    notificationDetails,
+                    payload: 'item x',
+                  );
+                } else if (Platform.isIOS) {
+                  const DarwinNotificationDetails iosNotificationDetails =
+                      DarwinNotificationDetails(presentAlert: true);
+                  const NotificationDetails notificationDetails =
+                      NotificationDetails(iOS: iosNotificationDetails);
+                  await flutterLocalNotificationsPlugin?.show(
+                      0,
+                      'This is the title',
+                      'This is the body',
+                      notificationDetails,
+                      payload: 'item x');
+                }
               },
             ),
 

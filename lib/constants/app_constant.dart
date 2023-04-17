@@ -9,4 +9,10 @@ class AppConstant {
     13.4565634,
     109.2441891,
   );
+  static List<int> filteredSensor = [
+    1005,
+    1006,
+    1007,
+    1008
+  ];
 }

@@ -1,19 +1,22 @@
 import 'package:latlong2/latlong.dart';
 
-import '../sensor/station_sensor_model.dart';
+import '../sensor/sensor_model.dart';
+import 'station_record_model.dart';
 
 class Station {
   int? stationId;
   String? name;
   String? address;
   LatLng? latLng;
-  List<StationSensor>? sensors;
+  List<Sensor>? sensors;
+  List<StationRecord>? stationRecords = [];
   Station({
     this.stationId,
     this.name,
     this.address,
     this.latLng,
     this.sensors,
+    this.stationRecords = const [],
   });
 
   Station.fromJson(Map<String, dynamic> json) {
@@ -27,10 +30,10 @@ class Station {
       ),
     );
     if (json['sensors'] != null) {
-      sensors = <StationSensor>[];
+      sensors = <Sensor>[];
       json['sensors'].forEach(
         (v) {
-          sensors!.add(StationSensor.fromJson(v));
+          sensors!.add(Sensor.fromJson(v));
         },
       );
     }
@@ -44,7 +47,11 @@ class Station {
     data['latitude'] = latLng?.latitude;
     data['longitude'] = latLng?.longitude;
     if (sensors != null) {
-      data['sensors'] = sensors!.map((v) => v.toJson()).toList();
+      data['sensors'] = sensors
+          ?.map(
+            (v) => v.toJson(),
+          )
+          .toList();
     }
     return data;
   }

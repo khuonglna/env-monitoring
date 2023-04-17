@@ -6,7 +6,6 @@ import '../../models/auth/auth_info.dart';
 import '../../models/auth/login_req.dart';
 import '../../models/auth/register_req.dart';
 import '../../models/sensor/sensor_model.dart';
-import '../../models/station/record.dart';
 import '../../models/station/station_model.dart';
 import '../../models/station/station_record_model.dart';
 import '../../models/view/map_view_model.dart';
@@ -70,12 +69,37 @@ class AuthBloc extends BaseCubit {
           model.stationList.clear();
           for (final resStation in resStationList.data as List<dynamic>) {
             final station = Station.fromJson(resStation);
+            if (station.sensors != null) {
+              for (int i = 0; i < station.sensors!.length; i++) {
+                Sensor sSensor = station.sensors![i];
+                final sensorIndex = model.sensorList.indexWhere(
+                  (s) => s.sensorId == sSensor.sensorId,
+                );
+                if (sensorIndex > -1) {
+                  station.sensors![i] = model.sensorList.singleWhere(
+                    (s) => s.sensorId == sSensor.sensorId,
+                  );
+                }
+              }
+            }
 
             // Get station data
             final resListStationData = await RequestService.instance.get(
               API.stationData,
               query: {
                 'station_id': station.stationId,
+                // 'start_date': '2021-03-08',
+                // 'end_date': '2023-04-08',
+                // 'data_count': 600,
+                // 'start_date': DateTime.now().subtract(
+                //   Duration(
+                //     days: DateTime(
+                //       DateTime.now().year + 4,
+                //       0,
+                //     ).day,
+                //   ),
+                // ),
+                // 'end_date': DateTime.now(),
               },
             );
 
@@ -85,9 +109,11 @@ class AuthBloc extends BaseCubit {
                   model.stationRecordMap[station.stationId ?? 0] = [];
                 }
               }
+
               for (final resStationData
                   in resListStationData.data as List<dynamic>) {
                 final stationRecord = StationRecord.fromJson(resStationData);
+                station.stationRecords?.add(stationRecord);
                 if (!model.stationRecordMap.containsKey(station.stationId)) {
                   model.stationRecordMap.addEntries(
                     {
@@ -104,7 +130,7 @@ class AuthBloc extends BaseCubit {
             if (model.stationRecordMap.isNotEmpty) {
               if (model.stationRecordMap[station.stationId] != null) {
                 model.stationRecordMap[station.stationId]!.sort(
-                  (a, b) => b.secondTillEpoch!.compareTo(a.secondTillEpoch!),
+                  (a, b) => b.secondSinceEpoch!.compareTo(a.secondSinceEpoch!),
                 );
               }
             }
@@ -113,26 +139,12 @@ class AuthBloc extends BaseCubit {
               {station.stationId ?? 0: 0},
             );
 
-            station.sensors?.forEach(
-              (stationSensor) {
-                final sensorData = model.sensorList.singleWhere(
-                  (s) => s.sensorId == stationSensor.sensorId,
-                );
-
-                model.stationSensorQuality[station.stationId ?? 0] =
-                    model.stationSensorQuality[station.stationId ?? 0]! +
-                        AppUtils.instance.calculateAQI(
-                          sensorData,
-                          model.stationRecordMap[station.stationId]?.first
-                              .records!
-                              .singleWhere(
-                                (r) => r.sensorId == stationSensor.sensorId,
-                                orElse: () => Record(),
-                              )
-                              .value,
-                        );
+            model.stationRecordMap[station.stationId]?.forEach(
+              (sR) {
+                sR.calculateStationSQI(model.sensorList);
               },
             );
+
             if (station.name?.contains('SC') ?? false) {
               model.enableStationList.add(station);
             }
@@ -142,6 +154,9 @@ class AuthBloc extends BaseCubit {
           model.isInit = true;
         } else {
           errorMessage = resStationList.message ?? '';
+        }
+        for (var station in model.stationList) {
+          log('$runtimeType, ${station.toJson()}');
         }
         return emit(
           LoadedState(

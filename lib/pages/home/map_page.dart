@@ -205,18 +205,19 @@ class _MapPageState extends State<MapPage> {
                         .map(
                           (station) => Marker(
                             point: station.latLng ?? AppConstant.defaultLatLng,
-                            width: 56,
-                            height: 56,
+                            width: 64,
+                            height: 64,
                             builder: (context) => Container(
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  width: 6,
+                                  width: 10,
                                   color:
                                       AppUtils.instance.getStationQualityColor(
-                                    stationSensorQuality:
-                                        model.stationSensorQuality[
-                                                station.stationId] ??
-                                            0,
+                                    stationSensorQuality: model
+                                            .stationRecordMap[station.stationId]
+                                            ?.first
+                                            .stationSQI ??
+                                        0,
                                   ),
                                 ),
                                 color: colorScheme.surface,

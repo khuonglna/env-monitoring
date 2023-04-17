@@ -1,3 +1,5 @@
+import 'sensor_record_model.dart';
+
 class Sensor {
   int? sensorId;
   String? name;
@@ -7,14 +9,15 @@ class Sensor {
   String? unitSymbol;
   bool? isActive;
 
-  Sensor(
-      {this.sensorId,
-      this.name,
-      this.upperBound,
-      this.lowerBound,
-      this.differBound,
-      this.unitSymbol,
-      this.isActive});
+  Sensor({
+    this.sensorId,
+    this.name,
+    this.upperBound,
+    this.lowerBound,
+    this.differBound,
+    this.unitSymbol,
+    this.isActive,
+  });
 
   Sensor.fromJson(Map<String, dynamic> json) {
     sensorId = json['sensor_id'];

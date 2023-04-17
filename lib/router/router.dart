@@ -7,12 +7,12 @@ import '../pages/home/station_list_page.dart';
 // import '../pages/home_page.dart';
 import '../pages/login_page.dart';
 import '../pages/register_page.dart';
+import '../pages/temp_page.dart';
 import '../widgets/base_scaffold.dart';
 import 'router_key_manager.dart';
 
 class AppRouter {
   static final router = GoRouter(
-    
     initialLocation: AppPath.login,
     navigatorKey: RouterKeyManager.instance.rootNavigatorKey,
     routes: <RouteBase>[
